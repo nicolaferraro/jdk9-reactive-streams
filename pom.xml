@@ -14,14 +14,20 @@
 
         <reactive-streams.version>1.0.1</reactive-streams.version>
 
+        <junit.version>4.12</junit.version>
+        <commons-lang3.version>3.6</commons-lang3.version>
+
         <maven-antrun-plugin.version>1.8</maven-antrun-plugin.version>
         <maven-resources-plugin.version>3.0.2</maven-resources-plugin.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
         <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>2.20.1</maven-surefire-plugin.version>
     </properties>
 
     <modules>
         <module>reactive-streams-compat</module>
+        <module>reactive-streams-compat-jdk8-tests</module>
+        <module>reactive-streams-compat-jdk9-tests</module>
     </modules>
 
 

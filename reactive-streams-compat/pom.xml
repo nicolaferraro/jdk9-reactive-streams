@@ -12,9 +12,17 @@
     <artifactId>reactive-streams-compat</artifactId>
 
     <properties>
-        <java9.sourceDirectory>${project.basedir}/src/main/jdk9</java9.sourceDirectory>
-        <java9.build.outputDirectory>${project.build.directory}/classes-jdk9</java9.build.outputDirectory>
+        <!-- Version of base class files -->
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
 
+        <!-- Version of multi-release class files -->
+        <multi-release.compiler.source>9</multi-release.compiler.source>
+        <multi-release.compiler.target>9</multi-release.compiler.target>
+
+        <!-- Special directories -->
+        <jdk9.source.dir>${project.basedir}/src/main/jdk9</jdk9.source.dir>
+        <jdk9.build.dir>${project.build.directory}/classes-jdk9</jdk9.build.dir>
     </properties>
 
     <dependencies>
@@ -27,89 +35,91 @@
 
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>${maven-antrun-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>compile-java9</id>
-                        <phase>compile</phase>
+    <profiles>
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>${maven-antrun-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>compile-java9</id>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <target>
+                                        <property name="compile_classpath" refid="maven.compile.classpath"/>
+
+                                        <mkdir dir="${jdk9.build.dir}" />
+                                        <javac source="${multi-release.compiler.source}"
+                                               target="${multi-release.compiler.source}"
+                                               srcdir="${jdk9.source.dir}"
+                                               destdir="${jdk9.build.dir}"
+                                               classpath="${compile_classpath}"
+                                               includeantruntime="false" />
+                                    </target>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.reactivestreams</groupId>
+                                <artifactId>reactive-streams</artifactId>
+                                <version>${reactive-streams.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <version>${maven-resources-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>copy-resources</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${jdk9.build.dir}</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <version>${maven-jar-plugin.version}</version>
                         <configuration>
-                            <target>
-                                <property name="compile_classpath" refid="maven.compile.classpath"/>
-
-                                <mkdir dir="${java9.build.outputDirectory}" />
-                                <javac srcdir="${java9.sourceDirectory}" destdir="${java9.build.outputDirectory}"
-                                       classpath="${compile_classpath}" includeantruntime="false" />
-                            </target>
+                            <archive>
+                                <manifestEntries>
+                                    <Multi-Release>true</Multi-Release>
+                                </manifestEntries>
+                            </archive>
+                            <finalName>jdk9-reactive-streams</finalName>
                         </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.reactivestreams</groupId>
-                        <artifactId>reactive-streams</artifactId>
-                        <version>${reactive-streams.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+                    </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven-resources-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${java9.build.outputDirectory}</directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+                </plugins>
+            </build>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Multi-Release>true</Multi-Release>
-                        </manifestEntries>
-                    </archive>
-                    <finalName>jdk9-reactive-streams</finalName>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>9</source>
-                    <target>9</target>
-                    <showWarnings>true</showWarnings>
-                    <showDeprecation>true</showDeprecation>
-                </configuration>
-            </plugin>
-
-        </plugins>
-    </build>
+        </profile>
+    </profiles>
 
 </project>
