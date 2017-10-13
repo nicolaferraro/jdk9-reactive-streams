@@ -8,6 +8,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.junit.Test;
 
 import java.util.Optional;
+import java.util.concurrent.Flow;
 
 import static org.junit.Assert.assertTrue;
 
@@ -29,6 +30,35 @@ public class FlowInterfacesTest {
                 .findFirst();
 
         assertTrue(impl.isPresent());
+    }
+
+    @Test
+    public void testFlowPublisherDirectAssignment() {
+
+        Publisher<String> publisher = new Publisher<String>() {
+            @Override
+            public void subscribe(Subscriber<? super String> subscriber) {
+            }
+        };
+
+        Flow.Publisher<String> pub = publisher;
+        pub.subscribe(new Flow.Subscriber<String>() {
+            @Override
+            public void onSubscribe(Flow.Subscription subscription) {
+            }
+
+            @Override
+            public void onNext(String item) {
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        });
     }
 
     @Test
